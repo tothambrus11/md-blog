@@ -1,7 +1,15 @@
 import * as fs from "fs/promises";
 import {readdir} from "fs/promises";
+import * as fss from "fs";
 import path from "path";
+import {Category} from "./category.js";
+import {Post} from "./post.js";
+import * as categoryGenerator from "./generators/category/category.js";
+import * as postListGenerator from "./generators/post-list/post-list.js";
+import * as headerGenerator from "./generators/header/header.js";
+import * as footerGenerator from "./generators/footer/footer.js";
 
+const folderNamePad = 40;
 let sourceFolder = process.argv[2];
 if (!sourceFolder) {
     console.error("No source folder was specified in the program line arguments")
@@ -14,6 +22,10 @@ if (!outFolder) {
     process.exit(1);
 }
 
+function slugify(text: string) {
+    return text.replaceAll(/\s/g, '-').toLowerCase();
+}
+
 const getDirectories = async source =>
     (await readdir(source, {withFileTypes: true}))
         .filter(dirent => dirent.isDirectory())
@@ -21,37 +33,31 @@ const getDirectories = async source =>
 
 let categoryFolders: string[];
 try {
-    categoryFolders = await getDirectories(sourceFolder)
+    categoryFolders = await getDirectories(path.join(sourceFolder, "posts"));
 } catch (e) {
-    console.error("Invalid folder given.");
+    console.error("Invalid source folder given. posts subfolder not found");
     process.exit(2);
 }
 
-interface Category {
-    displayName: string;
-    slug: string;
-    sourceFolder: string;
-    posts: Post[];
-}
-
-interface Post {
-    title: string;
-    slug: string;
-    date: string;
-    sourceFolder: string;
-    category: Category;
-}
-
-let categories = categoryFolders.map((cf): Category => {
+let categories = await Promise.all(categoryFolders.map(async (cf): Promise<Category> => {
     let si = cf.lastIndexOf("(");
     let ei = cf.lastIndexOf(")");
     let slug: string;
     let displayName: string;
+
     if (si == -1 && ei == -1) {
+        let slug = slugify(cf);
+        let cfRenamed = (cf + " ").padEnd(folderNamePad, " ") + "(" + slug + ")";
+
+        console.log("Renaming category folder to ", cfRenamed);
+        await fs.rename(
+            path.join(sourceFolder, cf),
+            path.join(sourceFolder, cfRenamed)
+        );
         return {
             displayName: cf,
-            slug: cf.replaceAll(/\s/g, '-').toLowerCase(),
-            sourceFolder: cf,
+            slug: slug,
+            sourceFolder: path.join(sourceFolder, "posts", cfRenamed),
             posts: []
         }
     } else {
@@ -62,47 +68,70 @@ let categories = categoryFolders.map((cf): Category => {
         return {
             displayName: cf.slice(0, si).trimEnd(),
             slug: cf.slice(si + 1, ei),
-            sourceFolder: cf,
+            sourceFolder: path.join(sourceFolder, "posts", cf),
             posts: []
         }
     }
-});
+}));
 
 let posts: Post[] = [];
 for (const category of categories) {
-    let postFolders = await getDirectories(path.join(sourceFolder, "/", category.sourceFolder));
-    category.posts = postFolders.map((folder): Post => {
-        let si = folder.lastIndexOf("(");
-        let ei = folder.lastIndexOf(")");
+    let postFolders = await getDirectories(category.sourceFolder);
+
+    category.posts = await Promise.all(postFolders.map(async (postFolder): Promise<Post> => {
+        let si = postFolder.lastIndexOf("(");
+        let ei = postFolder.lastIndexOf(")");
         let slug: string;
         let displayName: string;
-        if (si == -1 && ei == -1) {
+        if (si == -1 && ei == -1) { // no date or slug
+            let slug = slugify(postFolder);
+            let date = (new Date()).toISOString().split('T')[0]; // saving UTC date
+            let newPath = path.join(category.sourceFolder, `${(postFolder + " ").padEnd(folderNamePad, " ")}(${slug} ${date})`)
+            await fs.rename(
+                path.join(category.sourceFolder, postFolder),
+                newPath
+            );
+
             return {
-                title: folder,
-                slug: folder.replaceAll(/\s/g, '-').toLowerCase(),
-                sourceFolder: path.join(category.sourceFolder, "/", folder),
-                category: category,
-                date: "",
+                title: postFolder,
+                slug,
+                sourceFolder: newPath,
+                category,
+                date,
             }
         } else {
-            let spaceI = folder.lastIndexOf(' ');
+            let spaceI = postFolder.lastIndexOf(' ');
             if (si == -1 || ei == -1 || spaceI == -1 || si > ei || spaceI > ei) {
-                console.log("Invalid post directory name:", folder);
+                console.log("Invalid post directory name:", postFolder);
                 process.exit(4)
             }
-            // todo add no slug and only date option
             return {
-                title: folder.slice(0, si).trimEnd(),
-                slug: folder.slice(si + 1, spaceI).trimEnd(),
-                date: folder.slice(spaceI + 1, ei),
-                sourceFolder: path.join(category.sourceFolder, "/", folder),
+                title: postFolder.slice(0, si).trimEnd(),
+                slug: postFolder.slice(si + 1, spaceI).trimEnd(),
+                date: postFolder.slice(spaceI + 1, ei),
+                sourceFolder: path.join(category.sourceFolder, postFolder),
                 category: category
             }
         }
-    });
+    }));
 
     posts.push(...category.posts)
 }
 
-console.log(categories)
-console.log(posts)
+async function generateOutput() {
+    fss.rmSync(outFolder, {recursive: true, force: true});
+    fss.mkdirSync(outFolder);
+
+    categoryGenerator.init();
+    postListGenerator.init();
+    headerGenerator.init();
+    footerGenerator.init();
+
+    // Generate category pages
+    for(let category of categories){
+        fss.mkdirSync(path.join(outFolder, category.slug));
+        fss.writeFileSync(path.join(outFolder, category.slug, "index.html"), categoryGenerator.generate(category, categories));
+    }
+}
+
+await generateOutput();
