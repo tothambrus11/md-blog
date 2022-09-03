@@ -46,8 +46,7 @@ export function renderer(baseUrl: string): Renderer {
                     fileName = "main.js";
                 }
 
-                let hashed = hash(code);
-                console.log(hashed)
+                let hashed = hash(code + Math.random());
 
                 let content = '<!DOCTYPE html><html><head><script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.3.1/p5.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.3.1/addons/p5.sound.min.js"></script><meta charset="utf-8" /><style>html,body{margin:0;padding:0;overflow:hidden} canvas{display: block}</style></head><body>'
                 content += "<script>"
