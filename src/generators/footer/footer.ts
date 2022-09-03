@@ -11,6 +11,6 @@ export function init() {
     template = fs.readFileSync(path.join(__dirname, "footer.html")).toString();
 }
 
-export function generate() {
-    return template;
+export function generate(baseUrl: string) {
+    return template.replaceAll("$base-url$", baseUrl);
 }

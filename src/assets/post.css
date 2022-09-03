@@ -1,0 +1,102 @@
+.display-md .codespan {
+    background-color: #ccc;
+    padding: 3px;
+}
+.display-md pre {
+    border-radius: 0;
+    margin: 10px 0;
+    padding: 16px 40px;
+    background-color: #272822;
+    color: #ccc;
+    font-size: 0.9em;
+    line-height: 1.5;
+    overflow-x: auto;
+}
+.display-md pre * {
+    font-family: Consolas, monospace;
+}
+.display-md p {
+    margin: 15px 40px;
+    line-height: 1.7em;
+}
+.display-md blockquote {
+    margin: 15px 40px;
+    color: #999;
+    border-left: 6px solid #ccc;
+}
+.display-md blockquote p {
+    margin-left: 18px;
+    margin-right: 0;
+    margin-top: 10px;
+}
+.display-md h1, .display-md h2, .display-md h3, .display-md h4, .display-md h5, .display-md h6 {
+    margin: 15px 40px;
+}
+.display-md a, .display-md a:hover, .display-md a:focus, .display-md a:active {
+    color: #037f7e;
+}
+.display-md ol {
+    padding: 0;
+    counter-reset: li;
+    list-style: none;
+    /* Disable the normal item numbering */
+    position: relative;
+    margin-left: 40px;
+}
+.display-md ol li {
+    margin-left: 40px;
+}
+.display-md ol li:before {
+    content: counter(li) '.';
+    /* Use the counter as content */
+    counter-increment: li;
+    position: absolute;
+    right: calc(100% - 30px);
+}
+.display-md > ul {
+    margin: 0 40px;
+}
+.display-md img {
+    max-width: 100%;
+}
+.display-md p img:only-child {
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+.p5ch {
+    background-color: #3c3f41;
+    display: flex;
+    justify-content: space-between;
+}
+.p5ch > div {
+    display: flex;
+}
+.p5ch button {
+    outline: none;
+    border: none;
+    background-color: transparent;
+    display: flex;
+    gap: 5px;
+    border-radius: 0;
+    align-items: center;
+    height: 30px;
+    color: #ccc;
+    font-family: 'Segoe UI', 'SF Pro Text', 'Ubuntu', sans-serif;
+}
+.p5ch button:hover {
+    background-color: #2e3133;
+}
+.iframe-cont, iframe {
+    width: 100%;
+    border: none;
+    height: 450px;
+    max-height: 60vh;
+    background-color: #000;
+}
+.p5js-container.display-code .iframe-cont, .p5js-container.display-code .stop, .p5js-container.display-code .fullscreen {
+    display: none;
+}
+.p5js-container.display-run pre, .p5js-container.display-run .run {
+    display: none;
+}

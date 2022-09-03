@@ -15,6 +15,10 @@ export function init() {
     postCardGenerator.init();
 }
 
-export function generate(posts: Post[]) {
-    return template.replace("$posts$", posts.map(p => postCardGenerator.generate(p)).join(""));
+export function generate(posts: Post[], baseUrl: string) {
+    return template.replace("$posts$", posts
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .map(p => postCardGenerator.generate(p, baseUrl))
+        .join("")
+    );
 }

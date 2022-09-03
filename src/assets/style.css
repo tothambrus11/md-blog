@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+@import "darcula.css";
+body {
+    font-family: Poppins, Arial, sans-serif;
+}
+
+html, body{
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+}
+
+header{
+    display: block;
+    padding: 10px;
+}
+nav {
+    display: flex;
+}
+
+nav > * {
+    display: block;
+    padding: 30px;
+}
+
+h1{
+    text-align: center;
+}
