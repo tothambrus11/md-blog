@@ -36,7 +36,7 @@ export function generate(title: string, description: string, headerData: HeaderD
 
     return template
         .replace("$page-title$", escapeHtml(title))
-        .replace("$base-url$", headerData.baseUrl)
+        .replaceAll("$base-url$", headerData.baseUrl)
         .replace("$page-description$", escapeHtml(description)) // todo navigation bar
         .replace("$menu-items$", menuItems.map(mi=>menuItemGenerator.generate(mi.title, mi.url)).join(""))
 }
