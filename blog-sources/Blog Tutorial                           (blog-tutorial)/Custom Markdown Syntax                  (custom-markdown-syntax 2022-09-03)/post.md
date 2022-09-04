@@ -9,7 +9,7 @@
 ![kacsa](kacsa.webp "*x150 duck")   
  
 ### OH MY Duck
-hello eee
+ 
 ## Inserting math expressions
 **Block type:**
 <pre>
@@ -50,7 +50,7 @@ function draw(){
 </code>
 </pre>
 
-
+This might not work in autoreload mode, todo fix it by another wtf-style hack. 
 ```p5js
 // filename.js
 function setup(){
